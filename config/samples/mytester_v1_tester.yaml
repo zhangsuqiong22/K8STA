@@ -1,0 +1,12 @@
+apiVersion: mytester.kubeta.github.io/v1
+kind: Tester
+metadata:
+  labels:
+    app.kubernetes.io/name: tester
+    app.kubernetes.io/instance: tester-sample
+    app.kubernetes.io/part-of: k8statester
+    app.kubernetes.io/managed-by: kustomize
+    app.kubernetes.io/created-by: k8statester
+  name: tester-sample
+spec:
+  # TODO(user): Add fields here

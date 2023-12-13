@@ -1,0 +1,16 @@
+apiVersion: mytester.kubeta.github.io/v1
+kind: Tester
+metadata:
+  labels:
+  name: kubeta-tester
+  namespace: tester
+spec:
+  testPodSpec:
+    image: "test/automation/cases:v1.5"
+  testCaseScope:
+    performance: true
+    configuration: true
+
+
+
+

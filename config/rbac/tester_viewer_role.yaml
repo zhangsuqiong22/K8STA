@@ -1,0 +1,27 @@
+# permissions for end users to view testers.
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  labels:
+    app.kubernetes.io/name: clusterrole
+    app.kubernetes.io/instance: tester-viewer-role
+    app.kubernetes.io/component: rbac
+    app.kubernetes.io/created-by: k8statester
+    app.kubernetes.io/part-of: k8statester
+    app.kubernetes.io/managed-by: kustomize
+  name: tester-viewer-role
+rules:
+- apiGroups:
+  - mytester.kubeta.github.io
+  resources:
+  - testers
+  verbs:
+  - get
+  - list
+  - watch
+- apiGroups:
+  - mytester.kubeta.github.io
+  resources:
+  - testers/status
+  verbs:
+  - get
