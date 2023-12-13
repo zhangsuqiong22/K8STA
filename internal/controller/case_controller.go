@@ -157,10 +157,6 @@ func newCaseControllerDeployment(name string, namespace string, image string, no
 									Value: name,
 								},
 								{
-									Name:  "FINISH_ANNO_KEY",
-									Value: "rcp.nokia.com/" + name + "-status",
-								},
-								{
 									Name:  "FINISH_ANNO_VALUE",
 									Value: "finished",
 								},

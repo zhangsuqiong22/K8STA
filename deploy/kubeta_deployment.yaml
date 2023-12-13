@@ -416,16 +416,6 @@ rules:
   - list
   - watch
 - apiGroups:
-  - rannic.nokia.com
-  resources:
-  - rannicconfigs
-  verbs:
-  - create
-  - delete
-  - get
-  - list
-  - watch
-- apiGroups:
   - rbac.authorization.k8s.io
   resources:
   - clusterrolebindings
@@ -473,15 +463,6 @@ rules:
   - patch
   - update
   - watch
-- apiGroups:
-  - rcp.nokia.com
-  resources:
-  - nodesnapshots
-  verbs:
-  - create
-  - get
-  - list
-  - update
 - apiGroups:
   - security.openshift.io
   resourceNames:
