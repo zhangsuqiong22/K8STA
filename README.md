@@ -87,3 +87,6 @@ $ make manifests
 
 More information can be found via the [Kubebuilder Documentation](https://book.kubebuilder.io/introduction.html)
 
+
+
+**NOTE:** TestReport Controller and automation testing case examples, you can access: https://zenodo.org/uploads/10430295
