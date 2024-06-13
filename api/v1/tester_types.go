@@ -80,6 +80,11 @@ type TesterList struct {
 	Items           []Tester `json:"items"`
 }
 
+const (
+	DefaultTestreportImg string = "container-infra-local.hzisoj70.china.nsn-net.net/cnfmark/testreporter:v0.2"
+	// DefaultKubeconfigPath is the default local path of kubeconfig file.
+)
+
 func init() {
 	SchemeBuilder.Register(&Tester{}, &TesterList{})
 }

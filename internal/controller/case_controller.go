@@ -92,7 +92,7 @@ func newCaseControllerDeployment(name string, namespace string, image string, no
 	} else {
 		argCommand = "/robot/run_node.sh"
 	}
-	argCommand = argCommand + " test-pod " + strconv.Itoa(count)
+	argCommand = argCommand + " tester-testing-report-manager " + " kubeta " + strconv.Itoa(count)
 	if scope.Robot == true {
 		argCommand = argCommand + " kubeta-robot-case"
 	}
@@ -155,6 +155,10 @@ func newCaseControllerDeployment(name string, namespace string, image string, no
 								{
 									Name:  "MY_CR_NAME",
 									Value: name,
+								},
+								{
+									Name:  "FINISH_ANNO_KEY",
+									Value: "rcp.nokia.com/" + name + "-status",
 								},
 								{
 									Name:  "FINISH_ANNO_VALUE",

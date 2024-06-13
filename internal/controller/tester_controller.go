@@ -36,6 +36,7 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/types"
+	"k8s.io/apimachinery/pkg/util/intstr"
 	"k8s.io/client-go/kubernetes"
 	//"k8s.io/client-go/rest"
 	"k8s.io/client-go/tools/clientcmd"
@@ -82,7 +83,8 @@ func (r *TesterReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctr
 		l.Info("case status is empty, add status")
 		if err := r.updateCRStatus(ctx, infra, req.NamespacedName.Name, "Settingup"); err != nil {
 			l.Info("Error when updating status to setting up.")
-			panic(err)
+			//panic(err)
+			time.Sleep(1 * time.Second)
 		}
 		l.Info("Update CR status to Setting up")
 	}
@@ -132,6 +134,23 @@ func (r *TesterReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctr
 	}
 	nodeCount := len(nodeList.Items)
 	l.Info("cluster has", strconv.Itoa(nodeCount), "nodes")
+
+	TestSsFound := &appsv1.StatefulSet{}
+	err = r.Get(ctx, types.NamespacedName{Name: "test-pod", Namespace: req.NamespacedName.Namespace}, TestSsFound)
+	if err != nil && errors.IsNotFound(err) {
+		newTestSS := newTestStatefulSet(req.NamespacedName.Name, req.NamespacedName.Namespace, infra.Spec.TestPodSpec.Image, int32(nodeCount))
+		if err := r.Create(ctx, newTestSS); err != nil {
+			l.Error(err, "failed to create new test statefulset")
+			return ctrl.Result{}, err
+		}
+		l.Info("created new test statefulset", "Name", newTestSS.Name)
+
+		allRunning, _ := r.areAllPodsRunningInNamespace(ctx, req.NamespacedName.Namespace)
+		if allRunning == false {
+			l.Info("not all Pods status are running, wait ...")
+			return ctrl.Result{Requeue: true, RequeueAfter: time.Second * 3}, nil
+		}
+	}
 
 	// Fetch the Case controller
 	CaseDpFound := &appsv1.Deployment{}
@@ -200,7 +219,7 @@ func (r *TesterReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctr
 	}
 
 	// delete test statefulset
-	TestSsFound := &appsv1.StatefulSet{}
+	//TestSsFound := &appsv1.StatefulSet{}
 
 	l.Info("Try to delete test statefulset")
 	if err := r.Delete(ctx, TestSsFound); err != nil {
@@ -220,6 +239,7 @@ func (r *TesterReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctr
 
 // SetupWithManager sets up the controller with the Manager.
 func (r *TesterReconciler) SetupWithManager(mgr ctrl.Manager) error {
+	//fmt.Printf("##############Test###################")
 	// return ctrl.NewControllerManagedBy(mgr).
 	// 	For(&mytesterv1.Tester{}).
 	// 	Complete(r)
@@ -255,12 +275,12 @@ func (r *TesterReconciler) SetupWithManager(mgr ctrl.Manager) error {
 	if err != nil {
 		return err
 	}
-	newNs, err := clientset.CoreV1().Namespaces().Get(context.Background(), "tester", metav1.GetOptions{})
+	newNs, err := clientset.CoreV1().Namespaces().Get(context.Background(), "kubeta", metav1.GetOptions{})
 	if err != nil && errors.IsNotFound(err) {
 		// Define the namespace object
 		ns := &corev1.Namespace{
 			ObjectMeta: metav1.ObjectMeta{
-				Name: "tester",
+				Name: "kubeta",
 			},
 		}
 
@@ -304,6 +324,7 @@ func (r *TesterReconciler) SetupWithManager(mgr ctrl.Manager) error {
 	}
 
 	// Create rolebinding for crd creator
+	// Create rolebinding for crd creator
 	crdCreatorRoleName := "crd-creator"
 	crdCreatorRole := newClusterRoleforCRDCreator(crdCreatorRoleName)
 	_, err = clientset.RbacV1().ClusterRoles().Create(context.Background(), crdCreatorRole, metav1.CreateOptions{})
@@ -311,11 +332,18 @@ func (r *TesterReconciler) SetupWithManager(mgr ctrl.Manager) error {
 		return err
 	}
 	crdCreatorRoleBinding := newClusterRoleBindingforCRDCreator(crdCreatorRoleName, newNs.Name)
-	_, err = clientset.RbacV1().ClusterRoleBindings().Create(context.Background(), crdCreatorRoleBinding, metav1.CreateOptions{})
-	if err != nil {
+	_, err = clientset.RbacV1().ClusterRoleBindings().Get(context.Background(), crdCreatorRoleBinding.Name, metav1.GetOptions{})
+	if err != nil && errors.IsNotFound(err) {
+		_, err = clientset.RbacV1().ClusterRoleBindings().Create(context.Background(), crdCreatorRoleBinding, metav1.CreateOptions{})
+		if err != nil {
+			return err
+		}
+		fmt.Printf("rolebinding is created")
+	} else if err != nil {
 		return err
+	} else {
+		fmt.Printf("rolebinding already exists")
 	}
-	fmt.Printf("rolebinding is created")
 
 	//Create new Report deployment
 	qtReportName := "tester-testing-report-manager"
@@ -333,8 +361,38 @@ func (r *TesterReconciler) SetupWithManager(mgr ctrl.Manager) error {
 		return err
 	}
 	fmt.Printf("service is created")
+	//Create case service
+	caseSVCName := "case-controller"
+	caseSVC := createCaseControllerService(caseSVCName)
+	_, err = clientset.CoreV1().Services(newNs.Name).Create(context.Background(), caseSVC, metav1.CreateOptions{})
+	if err != nil {
+		return err
+	}
 
 	return nil
+}
+
+// createCaseControllerService
+func createCaseControllerService(name string) *corev1.Service {
+	// Define the service object
+	service := &corev1.Service{
+		ObjectMeta: metav1.ObjectMeta{
+			Name: name,
+		},
+		Spec: corev1.ServiceSpec{
+			Selector: map[string]string{
+				"app": name,
+			},
+			Ports: []corev1.ServicePort{
+				{
+					Protocol:   "TCP",
+					Port:       5201,
+					TargetPort: intstr.FromInt(5201),
+				},
+			},
+		},
+	}
+	return service
 }
 
 func (r *TesterReconciler) createSCCRoleBinding(name string, namespace string) *rbacv1.RoleBinding {

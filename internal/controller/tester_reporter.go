@@ -71,6 +71,10 @@ func createQtReporterService(name string) *corev1.Service {
 
 func createQtReporterDeployment(name string, namespace string) *appsv1.Deployment {
 	image := os.Getenv("QT_REPORTER_IMAGE")
+	if image == "" {
+		image = "container-infra-local.hzisoj70.china.nsn-net.net/cnfmark/testreporter:v0.2"
+	}
+	//fmt.Println(image)
 	deployment := &appsv1.Deployment{
 		ObjectMeta: metav1.ObjectMeta{
 			Name: name,
@@ -96,12 +100,18 @@ func createQtReporterDeployment(name string, namespace string) *appsv1.Deploymen
 							Name:            "crhttpserver",
 							Resources: corev1.ResourceRequirements{
 								Limits: corev1.ResourceList{
-									corev1.ResourceCPU:    resource.MustParse("4"),
-									corev1.ResourceMemory: resource.MustParse("2Gi"),
+									corev1.ResourceCPU:    resource.MustParse("500m"),
+									corev1.ResourceMemory: resource.MustParse("1Gi"),
 								},
 								Requests: corev1.ResourceList{
-									corev1.ResourceCPU:    resource.MustParse("4"),
-									corev1.ResourceMemory: resource.MustParse("2Gi"),
+									corev1.ResourceCPU:    resource.MustParse("250m"),
+									corev1.ResourceMemory: resource.MustParse("512Mi"),
+								},
+							},
+							VolumeMounts: []corev1.VolumeMount{
+								{
+									Name:      "kube-config",
+									MountPath: "/root/.kube/config",
 								},
 							},
 							Env: []corev1.EnvVar{
@@ -114,6 +124,17 @@ func createQtReporterDeployment(name string, namespace string) *appsv1.Deploymen
 								Privileged: ptrBool(true),
 								RunAsUser:  int64Ptr(0),
 								RunAsGroup: int64Ptr(0),
+							},
+						},
+					},
+					Volumes: []corev1.Volume{
+						{
+							Name: "kube-config",
+							VolumeSource: corev1.VolumeSource{
+								HostPath: &corev1.HostPathVolumeSource{
+									Path: "/root/.kube/config",
+									Type: new(corev1.HostPathType),
+								},
 							},
 						},
 					},
