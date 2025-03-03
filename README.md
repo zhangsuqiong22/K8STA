@@ -1,5 +1,19 @@
-# Kubernetes Test Automation Operator
-Kubernetes Test Automation Operator is targeted to execute testing automation cases.
+# Overview
+Kubernetes Test Automation Operator (K8STA) is targeted to execute testing automation cases. It provides below features:
+- Easily Trigger and Execute Tests: trigger tests both in and outside of the CI/CD process.
+- Retrieve Test Results Efficiently: quickly access test results and artifacts for effective debugging.
+- Scalability: efficiently execute parallel test cases by utilizing Kubernetes' native scaling capabilities.
+- Support Subset Testing: enabling the execution of specific test cases instead of full testing pipelines.
+
+
+# Prerequisites
+Use the following tools to set up the project:
+
+- Version 1.24 or higher of Go  
+- Version 5.3.0 of Kustomize  
+- Version 3.14.0 of Kubebuilder  
+- The latest version of Docker  
+- The latest version of Kubernetes
 
 
 ## Getting Started
@@ -7,29 +21,28 @@ You need a in Kubernetes cluster.
 **Note:** Your controller will automatically use the current context
 in your kubeconfig file (i.e. whatever cluster `kubectl cluster-info` shows).
 
-### Test It Out
-1. Install CRDs into cluster:
+1. Install test CRDs into cluster:
 
 ```sh
 $ make install
 ```
 
-2. Run controller (switch to a new terminal if you want to leave it running):
+2. Install test controller (switch to a new terminal if you want to leave it running):
 
 ```sh
 $ make run
 ```
 **NOTE:** You can also run this in one step by running: `make install run`
 
-3. Install Instances of Custom Resources:
+3. Trigger test cases by test Custom Resources:
 
 ```sh
 $ kubectl apply -f tester_cr.yaml
 ```
 **NOTE:** package your automation testing cases to container image, replace it to CR in filed: testPodSpec
 
-### Uninstall CRDs
-To delete the CRDs from the cluster:
+### Recover Env.
+Uninstall CRDs: delete the CRDs from the cluster:
 
 ```sh
 $ make uninstall
@@ -42,7 +55,7 @@ UnDeploy the controller to the cluster:
 $ make undeploy
 ```
 
-### Running on the cluster with PoD
+### Running on the cluster with PoD (Optional)
 1. Build and push your image to the location specified by `IMG`:
 
 ```sh
@@ -86,7 +99,3 @@ $ make manifests
 **NOTE:** Run `make --help` for more information on all potential `make` targets
 
 More information can be found via the [Kubebuilder Documentation](https://book.kubebuilder.io/introduction.html)
-
-
-
-**NOTE:** TestReport Controller and automation testing case examples, you can access: https://zenodo.org/uploads/10430295
