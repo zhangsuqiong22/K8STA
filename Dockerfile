@@ -3,8 +3,6 @@ FROM golang:1.20 as builder
 ARG TARGETOS
 ARG TARGETARCH
 ENV GOPROXY=https://goproxy.io
-#ENV https_proxy=10.144.1.10:8080
-#ENV http_proxy=10.144.1.10:8080
 
 ARG https_proxy=10.144.1.10:8080
 ARG http_proxy=10.144.1.10:8080
