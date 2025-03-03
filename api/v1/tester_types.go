@@ -57,11 +57,6 @@ type TesterStatus struct {
 	Conditions []metav1.Condition `json:"conditions,omitempty"`
 }
 
-//+kubebuilder:object:root=true
-//+kubebuilder:subresource:status
-//+kubebuilder:printcolumn:name="Status",type=string,JSONPath=`.status.caseStatus`
-//+kubebuilder:printcolumn:name="Age",type="date",JSONPath=".metadata.creationTimestamp"
-
 // Tester is the Schema for the testers API
 type Tester struct {
 	metav1.TypeMeta   `json:",inline"`
