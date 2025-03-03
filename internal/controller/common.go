@@ -43,30 +43,6 @@ func getFirstRunningPodNamesWithPrefix(pods []corev1.Pod, prefix string) (string
 	return "", nil
 }
 
-// func createNetworkAttachemntDefinition(name string, namespace string, devicePool string, nadConfig map[string]interface{}) *cniv1.NetworkAttachmentDefinition {
-// 	nadConfigJson, err := json.Marshal(nadConfig)
-// 	if err != nil {
-// 		return nil
-// 	}
-// 	nadConfigJsonStr := string(nadConfigJson)
-
-// 	// Create new NAD in new namespace
-// 	nadObject := &cniv1.NetworkAttachmentDefinition{
-// 		ObjectMeta: metav1.ObjectMeta{
-// 			Name:      name,
-// 			Namespace: namespace,
-// 			Annotations: map[string]string{
-// 				"k8s.v1.cni.cncf.io/resourceName": devicePool,
-// 			},
-// 		},
-// 		Spec: cniv1.NetworkAttachmentDefinitionSpec{
-// 			Config: nadConfigJsonStr,
-// 		},
-// 	}
-
-// 	return nadObject
-// }
-
 func createPodSecurityContext() *corev1.PodSecurityContext {
 	return &corev1.PodSecurityContext{
 		FSGroup:    int64Ptr(9999),
