@@ -4,8 +4,6 @@ ARG TARGETOS
 ARG TARGETARCH
 ENV GOPROXY=https://goproxy.io
 
-ARG https_proxy=10.144.1.10:8080
-ARG http_proxy=10.144.1.10:8080
 
 WORKDIR /workspace
 # Copy the Go Modules manifests
